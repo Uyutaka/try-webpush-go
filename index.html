@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Webpush Golang Example</title>
+</head>
+
+<body>
+    <script>
+        function subscribe() {
+            navigator.serviceWorker.ready
+                .then(function (registration) {
+                    const vapidPublicKey = 'BMZvcUluk_cARMEsN4nbO-MLxx3s124NYnrCqhE3XT5QPCxQUFCEqh1T4WylJ4jCFZDUh68RiMA1-cFDWwRzMtY';
+                    // by https://tools.reactpwa.com/vapid?email=ssss%40g.com
+                    /*
+                    {
+  "subject": "mailto:ssss@example.com",
+  "publicKey": "BMZvcUluk_cARMEsN4nbO-MLxx3s124NYnrCqhE3XT5QPCxQUFCEqh1T4WylJ4jCFZDUh68RiMA1-cFDWwRzMtY",
+  "privateKey": "k0U5ulyDJGJZsg_pVgy0lhR97rXlFl_HPhQ1tOnYbLA"
+}
+                    */
+                    return registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                    });
+                })
+                .then(function (subscription) {
+                    console.log(
+                        JSON.stringify({
+                            subscription: subscription,
+                        })
+                    );
+                })
+                .catch(err => console.error(err));
+        }
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+            console.log(base64);
+            console.log("base64");
+
+            const rawData = window.atob(base64);
+            return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+            navigator.serviceWorker.ready
+                .then(function (registration) {
+                    return registration.pushManager.getSubscription();
+                })
+                .then(function (subscription) {
+                    if (!subscription) {
+                        subscribe();
+                    } else {
+                        console.log(
+                            JSON.stringify({
+                                subscription: subscription,
+                            })
+                        );
+                    }
+                });
+        }
+    </script>
+</body>
+
+</html>
